@@ -1,0 +1,7 @@
+1.	Configure private docker registry on node master-a.
+
+2.	Create custom apache docker image having index.html with content “<H1>Containerized Apache</H1>
+
+3.	Push the image in private docker registry
+
+4.	Re-deploy containerized apache application on node worker-a
