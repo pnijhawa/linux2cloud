@@ -1,23 +1,17 @@
-# kubernetes
+•	Enable ssh on all nodes
+# sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
+# sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+# grep -E "^PermitRootLogin |^PasswordAuthentication " /etc/ssh/sshd_config
+# systemctl restart sshd
 
-**Enable ssh on all nodes**
+•	Set root password
+# echo redhat | passwd --stdin root
 
-sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
-grep -E "^PermitRootLogin |^PasswordAuthentication " /etc/ssh/sshd_config
-systemctl restart sshd
+•	Set Hostname on Nodes
+# hostnamectl set-hostname <hostname>
 
-**Set root password**
-
-echo redhat | passwd --stdin root
-
-**Set Hostname on Nodes**
-
-hostnamectl set-hostname <hostname>
-  
-**Update /etc/hosts file on all nodes**
-
-[root@loadbalancer ~]# cat /etc/hosts
+•	Update /etc/hosts file on all node
+# cat /etc/hosts
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 #::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 
@@ -27,26 +21,34 @@ hostnamectl set-hostname <hostname>
 10.128.0.8      worker-a
 10.138.0.8      worker-b
 
-**Disable Selinux on all nodes**
-
-[root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux"; done
-[root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "grep disabled /etc/sysconfig/selinux"; done
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "init 6"; done
-[root@loadbalancer ~]# init 6
-[root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n setenforce 0; done
-
-**Generate ssh key**
-
+•	Generate ssh key and copy to each server
 [root@loadbalancer ~]# ssh-keygen
 [root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh-copy-id $n; done
 
-**Update all the nodes and install the packages**
-
+•	Update all the nodes and install the package
 [root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n yum update -y; done
+
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "yum install wget gcc pcre-static pcre-devel curl -y"; done
 
-**Configure Haproxy on loadbalancer**
 
+•	Disable selinux on all nodes
+[root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux"; done
+
+[root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "grep disabled /etc/sysconfig/selinux"; done
+
+[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "init 6"; done
+
+[root@loadbalancer ~]# init 6
+
+[root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n uname -a; done
+[root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n setenforce 0; done
+
+•	Disable Swap
+[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "sed -i '/swap/d' /etc/fstab"; done
+[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "swapoff -a"; done
+[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "swapon -s"; done
+
+•	Configure Haproxy on loadbalancer
 [root@loadbalancer ~]# yum install haproxy -y
 
 [root@loadbalancer ~]# cat /etc/haproxy/haproxy.cfg
@@ -70,13 +72,8 @@ backend be-apiserver
 [root@loadbalancer ~]# systemctl status haproxy
 [root@loadbalancer ~]# nc -v localhost 6443
 
-**Disable Swap**
 
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "sed -i '/swap/d' /etc/fstab"; done
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "swapoff -a"; done
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "swapon -s"; done
-
-**Create Repository on all Nodes**
+•	Create repository file and send it to all nodes
 [root@loadbalancer ~]# cat > /etc/yum.repos.d/kubernetes.repo <<EOF
 [kubernetes]
 name=Kubernetes
@@ -89,30 +86,39 @@ EOF
 
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; scp /etc/yum.repos.d/kubernetes.repo $n:/etc/yum.repos.d/; done
 
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "yum install -y kubelet kubeadm kubectl"; done
+•	Install kubeadm, kubectl, kubelet and docker package on all the nodes
+[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "yum install -y kubelet kubeadm kubectl docker"; done
 
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "yum install -y docker"; done
-
-On Master Nodes (master-a, master-b)
-firewall-cmd --permanent --add-port=6443/tcp
-firewall-cmd --permanent --add-port=2379-2380/tcp
-firewall-cmd --permanent --add-port=10250/tcp
-firewall-cmd --permanent --add-port=10251/tcp
-firewall-cmd --permanent --add-port=10252/tcp
-firewall-cmd --permanent --add-port=10255/tcp
-firewall-cmd --reload
-
-On Worker Nodes (worker-a, worker-b)
-firewall-cmd --permanent --add-port=10251/tcp
-firewall-cmd --permanent --add-port=10255/tcp
-firewall-cmd --reload
-
+•	Stop and disable firewall on all nodes
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl disable firewalld"; done
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl stop firewalld"; done
+
+Note – If we keep firewall enabled then we need to add below ports
+
+•	Enable ports On Master Nodes (master-a, master-b)
+# firewall-cmd --permanent --add-port=6443/tcp
+# firewall-cmd --permanent --add-port=2379-2380/tcp
+# firewall-cmd --permanent --add-port=10250/tcp
+# firewall-cmd --permanent --add-port=10251/tcp
+# firewall-cmd --permanent --add-port=10252/tcp
+# firewall-cmd --permanent --add-port=10255/tcp
+# firewall-cmd --reload
+
+•	Enable ports On Worker Nodes (worker-a, worker-b)
+# firewall-cmd --permanent --add-port=10251/tcp
+# firewall-cmd --permanent --add-port=10255/tcp
+# firewall-cmd --reload
+
+•	Start and enable docker service on all nodes
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl enable docker"; done
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl start docker"; done
+
+•	Start and enable kubelet on all the nodes
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl enable kubelet"; done
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl start kubelet"; done
+
+•	Tune bridge network parameters on all the nodes
+Note – On load balancer node it is not required, just to make easy copy to all node here we have changes these parameters
 
 [root@loadbalancer ~]# cat <<EOF > /etc/sysctl.d/k8s.conf
 net.bridge.bridge-nf-call-ip6tables = 1
@@ -122,28 +128,40 @@ EOF
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; scp /etc/sysctl.d/k8s.conf $n:/etc/sysctl.d/; done
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "sysctl -p"; done
 
+•	Initiate Cluster setup from any Master Node.
 [root@master-a ~]# kubeadm init --control-plane-endpoint "loadbalancer:6443" --upload-certs --pod-network-cidr=192.168.0.0/16
 
+•	Make a note of commands shown in o/p of above command
+
+•	Join other Master node to cluster
 [root@master-b ~]# kubeadm join loadbalancer:6443 --token 37oxyc.n0uf6dh50g5bu6sw \
 >     --discovery-token-ca-cert-hash sha256:2cd93e097c694a1a532eb30db9e5d57368def7281fa0a2fd248a2c0ae6847aee \
 >     --control-plane --certificate-key 098ffba6a0187daeef49b0c767e37759e2ee6c365441b2c32d58bb09e281b48a
 
-For Worker Nodes
+•	Join Worker Nodes
 [root@worker-a ~]# kubeadm join loadbalancer:6443 --token 37oxyc.n0uf6dh50g5bu6sw \
     --discovery-token-ca-cert-hash sha256:2cd93e097c694a1a532eb30db9e5d57368def7281fa0a2fd248a2c0ae6847aee
-	
+
 [root@worker-b ~]# kubeadm join loadbalancer:6443 --token 37oxyc.n0uf6dh50g5bu6sw \
 >     --discovery-token-ca-cert-hash sha256:2cd93e097c694a1a532eb30db9e5d57368def7281fa0a2fd248a2c0ae6847aee
 
+•	Set Environment to access Kubernetes cluster
 [root@master-a ~]#   mkdir -p $HOME/.kube
 [root@master-a ~]#   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 [root@master-a ~]#   sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-
+•	Check Node status, all the nodes will be show in cluster but in “NotReady” state because network plugins is still pending, that will be perform in next step.
+•	Set Environment on Loadbalancer if we want to access cluster from loadbalancer
 [root@loadbalancer ~]# mkdir -p $HOME/.kube
 [root@loadbalancer ~]# scp  master-a:/etc/kubernetes/admin.conf $HOME/.kube/config
+
+•	We already configure repository file, so here only we need to install kubectl package
 [root@loadbalancer ~]# yum install kubectl -y
 
+•	Install Network Plugins
 [root@loadbalancer ~]# kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
+•	Review pods in kube-system namespace, once all the pods will be running and deploy then check node status
 [root@loadbalancer ~]# kubectl get pods -n kube-system
+
+# kubectl get nodes
