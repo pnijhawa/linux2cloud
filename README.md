@@ -8,12 +8,15 @@ grep -E "^PermitRootLogin |^PasswordAuthentication " /etc/ssh/sshd_config
 systemctl restart sshd
 
 **Set root password**
+
 echo redhat | passwd --stdin root
 
 **Set Hostname on Nodes**
+
 hostnamectl set-hostname <hostname>
   
 **Update /etc/hosts file on all nodes**
+
 [root@loadbalancer ~]# cat /etc/hosts
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 #::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
@@ -24,19 +27,20 @@ hostnamectl set-hostname <hostname>
 10.128.0.8      worker-a
 10.138.0.8      worker-b
 
-
-**Generate ssh key**
-[root@loadbalancer ~]# ssh-keygen
-[root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh-copy-id $n; done
-
 **Disable Selinux on all nodes**
+
 [root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux"; done
 [root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "grep disabled /etc/sysconfig/selinux"; done
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "init 6"; done
 [root@loadbalancer ~]# init 6
-
-[root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n uname -a; done
 [root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n setenforce 0; done
+
+**Generate ssh key**
+
+[root@loadbalancer ~]# ssh-keygen
+[root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh-copy-id $n; done
+
+
 
 
 Update all the nodes
