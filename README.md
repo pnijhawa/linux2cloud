@@ -5,13 +5,13 @@
 # systemctl restart sshd
 
 •	Set root password
-# echo redhat | passwd --stdin root
+echo redhat | passwd --stdin root
 
 •	Set Hostname on Nodes
-# hostnamectl set-hostname <hostname>
+hostnamectl set-hostname <hostname>
 
 •	Update /etc/hosts file on all node
-# cat /etc/hosts
+cat /etc/hosts
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 #::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 
@@ -96,18 +96,18 @@ EOF
 Note – If we keep firewall enabled then we need to add below ports
 
 •	Enable ports On Master Nodes (master-a, master-b)
-# firewall-cmd --permanent --add-port=6443/tcp
-# firewall-cmd --permanent --add-port=2379-2380/tcp
-# firewall-cmd --permanent --add-port=10250/tcp
-# firewall-cmd --permanent --add-port=10251/tcp
-# firewall-cmd --permanent --add-port=10252/tcp
-# firewall-cmd --permanent --add-port=10255/tcp
-# firewall-cmd --reload
+firewall-cmd --permanent --add-port=6443/tcp
+firewall-cmd --permanent --add-port=2379-2380/tcp
+firewall-cmd --permanent --add-port=10250/tcp
+firewall-cmd --permanent --add-port=10251/tcp
+firewall-cmd --permanent --add-port=10252/tcp
+firewall-cmd --permanent --add-port=10255/tcp
+firewall-cmd --reload
 
 •	Enable ports On Worker Nodes (worker-a, worker-b)
-# firewall-cmd --permanent --add-port=10251/tcp
-# firewall-cmd --permanent --add-port=10255/tcp
-# firewall-cmd --reload
+firewall-cmd --permanent --add-port=10251/tcp
+firewall-cmd --permanent --add-port=10255/tcp
+firewall-cmd --reload
 
 •	Start and enable docker service on all nodes
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl enable docker"; done
