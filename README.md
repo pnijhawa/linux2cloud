@@ -10,15 +10,15 @@
 
 •	Set root password
 
-echo redhat | passwd --stdin root
+> echo redhat | passwd --stdin root
 
 •	Set Hostname on Nodes
 
-hostnamectl set-hostname <hostname>
+> hostnamectl set-hostname <hostname>
 
 •	Update /etc/hosts file on all node
 
-cat /etc/hosts
+> cat /etc/hosts
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 #::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 
