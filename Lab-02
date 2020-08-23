@@ -1,0 +1,13 @@
+1.	Create nodes with below hostname on any cloud.
+a.	loadbalcer
+b.	master-a
+c.	master-b
+d.	worker-a
+e.	worker-b
+f.	worker-c
+
+2.	Configure Kubernetes cluster having 2 master, 3 worker nodes and 1 loadbalancer 
+
+3.	Install “Funnel Network Plugins”
+
+4.	Deploy nginx application on cluster
