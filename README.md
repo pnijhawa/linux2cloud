@@ -1,9 +1,9 @@
 •	Enable ssh on all nodes
 
 > sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
-grep -E "^PermitRootLogin |^PasswordAuthentication " /etc/ssh/sshd_config
-systemctl restart sshd
+> sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+> grep -E "^PermitRootLogin |^PasswordAuthentication " /etc/ssh/sshd_config
+> systemctl restart sshd
 
 •	Set root password
 
