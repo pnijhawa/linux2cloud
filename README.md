@@ -40,13 +40,13 @@ hostnamectl set-hostname <hostname>
 [root@loadbalancer ~]# ssh-keygen
 [root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh-copy-id $n; done
 
+**Update all the nodes and install the packages**
 
-
-
-Update all the nodes
 [root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n yum update -y; done
+[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "yum install wget gcc pcre-static pcre-devel curl -y"; done
 
-Configure Haproxy on loadbalancer
+**Configure Haproxy on loadbalancer**
+
 [root@loadbalancer ~]# yum install haproxy -y
 
 [root@loadbalancer ~]# cat /etc/haproxy/haproxy.cfg
@@ -70,13 +70,13 @@ backend be-apiserver
 [root@loadbalancer ~]# systemctl status haproxy
 [root@loadbalancer ~]# nc -v localhost 6443
 
-Disable Swap
+**Disable Swap**
+
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "sed -i '/swap/d' /etc/fstab"; done
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "swapoff -a"; done
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "swapon -s"; done
 
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "yum install wget gcc pcre-static pcre-devel curl -y"; done
-
+**Create Repository on all Nodes**
 [root@loadbalancer ~]# cat > /etc/yum.repos.d/kubernetes.repo <<EOF
 [kubernetes]
 name=Kubernetes
