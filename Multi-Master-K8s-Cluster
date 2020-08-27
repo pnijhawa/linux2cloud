@@ -42,21 +42,16 @@ cat /etc/hosts
 
 •	Disable selinux on all nodes
 
-[root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux"; done
-
-[root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "grep disabled /etc/sysconfig/selinux"; done
+•	Disable/Permissive selinux on all nodes
+# cat /etc/sysconfig/selinux
+SELINUX=permissive
 
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "init 6"; done
 
-[root@loadbalancer ~]# init 6
-
-[root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n uname -a; done
-[root@loadbalancer ~]# for n in loadbalancer master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n setenforce 0; done
 
 •	Disable Swap
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "sed -i '/swap/d' /etc/fstab"; done
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "swapoff -a"; done
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "swapon -s"; done
+[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "sed -i '/swap/d' /etc/fstab; swapoff -a; swapon -s"; done
+
 
 •	Configure Haproxy on loadbalancer
 
@@ -83,6 +78,9 @@ backend be-apiserver
 [root@loadbalancer ~]# systemctl status haproxy
 [root@loadbalancer ~]# nc -v localhost 6443
 
+[root@loadbalancer ~]# systemctl disable firewalld
+[root@loadbalancer ~]# systemctl stop firewalld
+
 
 •	Create repository file and send it to all nodes
 
@@ -100,12 +98,13 @@ EOF
 
 •	Install kubeadm, kubectl, kubelet and docker package on all the nodes
 
+Note – For Centos 7 in virtualization, **in-premises** we need to install **docker-ce** as driver however if we are installing it on **cloud premises** then we need to install **docker**.
+
 [root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "yum install -y kubelet kubeadm kubectl docker"; done
 
 •	Stop and disable firewall on all nodes
 
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl disable firewalld"; done
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl stop firewalld"; done
+[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl disable firewalld; systemctl stop firewalld"; done
 
 Note – If we keep firewall enabled then we need to add below ports
 
@@ -127,13 +126,11 @@ firewall-cmd --reload
 
 •	Start and enable docker service on all nodes
 
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl enable docker"; done
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl start docker"; done
+[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl enable docker; systemctl start docker"; done
 
 •	Start and enable kubelet on all the nodes
 
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl enable kubelet"; done
-[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl start kubelet"; done
+[root@loadbalancer ~]# for n in master-a master-b worker-a worker-b; do echo "*********$n********"; ssh -qt $n "systemctl enable kubelet; systemctl start kubelet"; done
 
 •	Tune bridge network parameters on all the nodes
 
