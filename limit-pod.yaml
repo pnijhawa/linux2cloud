@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: limit-pod
+spec:
+  containers:
+  - name: limit-pod
+    image: docker.io/ocpqe/hello-pod
+    resources:
+      limits:
+        cpu: "80m"
+        memory: "100Mi"
+      requests:
+        cpu: "10m"
+        memory: "20Mi"
