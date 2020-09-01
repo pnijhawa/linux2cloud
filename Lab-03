@@ -1,0 +1,4 @@
+1.	Create a pod using YAML
+2.	Investigate the pod using kubectl 
+3.	From loadbalancer node capture the detail of pods using curl
+4.	Delete the pod using curl command
