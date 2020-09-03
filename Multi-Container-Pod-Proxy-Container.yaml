@@ -43,7 +43,7 @@ metadata:
     app: proxy-container-pod
 spec:
   containers:
-  - name: backend-webapp
+  - name: webapp
     image: training/webapp
   - name: frontend-nginx
     image: nginx:alpine
