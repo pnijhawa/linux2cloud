@@ -1,0 +1,5 @@
+1.	Generate manifest for a pod using centos/httpd-24-centos7 image and then deploy httpd pod with name “first-web-pod”
+2.	Deploy multi container pod with sidecar container with below specifications
+a.	Nginx should be main container having /usr/share/nginx/html as document root
+b.	Debian as sidecar container which generate data /my-pd directory
+3.	Deploy multi container pod with proxy container where ngnix should be frontend for a web application
