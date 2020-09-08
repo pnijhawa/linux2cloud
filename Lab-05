@@ -1,0 +1,10 @@
+1.	Generate deployment manifest.
+2.	Modify the image with gitlab/gitlab-ce:8.4.3-ce.0
+3.	Deploy the manifest
+4.	Check the events and if got error regarding image, then update the deployment and change image with gitlab/gitlab-ce
+5.	Scale up the deployment with 5 replicas
+6.	Expose the gitlab deployment
+7.	Access the gitlab, login prompt of gitlab should be display
+ 
+8.	Rollback the deployment to last version
+9.	Delete the deployment
