@@ -1,0 +1,38 @@
+
+## First Pod
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hello-pod
+  labels:
+    app: hello-pod
+    tier: app
+spec:
+  containers:
+  - name: hello-pod
+    image: docker.io/ocpqe/hello-pod
+---
+
+## Second Pod
+#
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webserver
+spec:
+  affinity:
+    podAntiAffinity:
+## Anti Affinity
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: tier
+            operator: In
+## Operator keyword works as a mediator here it means value of tier is app
+
+            values:
+            - app
+        topologyKey: kubernetes.io/hostname
+  containers:
+  - name: webserver
+    image: httpd
