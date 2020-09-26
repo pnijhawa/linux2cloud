@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: internal-volume-deployment
+  labels:
+    app: centos
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: centos
+  template:
+    metadata:
+      labels:
+        app: centos
+    spec:
+      volumes:
+      - name: data
+        emptyDir: {}
+      containers:
+      - name: centos1
+        image: centos
+        command: ['sh', '-c', 'echo The app is running! && sleep 3600']
+        volumeMounts:
+        - name: data
+          mountPath: /centos1
+      - name: centos2
+        image: centos
+        command: ['sh', '-c', 'echo The app is running! && sleep 3600']
+        volumeMounts:
+        - name: data
+          mountPath: /centos2
