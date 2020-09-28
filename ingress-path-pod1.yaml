@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: internal-volume-pod
+  name: ingress-path-pod1
   labels:
-    app: internal-volume-pod
+    app: ingress-path-pod1
 spec:
   volumes:
   - name: data
@@ -16,7 +16,7 @@ spec:
       mountPath: /usr/local/apache2/htdocs/centos1/
     command: ['sh', '-c', 'echo Hello to Centos1 > /usr/local/apache2/htdocs/centos1/index.html']
   containers:
-  - name: centos1
+  - name: web1
     image: httpd
     #command: ['sh', '-c', 'echo The app is running! && sleep 3600']
     volumeMounts:
