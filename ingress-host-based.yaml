@@ -13,7 +13,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: nginx-deployment
+            name: nginx
             port:
               number: 80
   - host: httpd.example.com
@@ -23,6 +23,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: httpd-deployment
+            name: httpd
             port:
               number: 80
