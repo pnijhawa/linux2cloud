@@ -6,7 +6,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: loadbalancer.example.com
+  - host: nginx.example.com
     http:
       paths:
       - path: /
@@ -16,7 +16,7 @@ spec:
             name: nginx-deployment
             port:
               number: 80
-  - host: loadbalancer2.example.com
+  - host: httpd.example.com
     http:
       paths:
       - path: /
