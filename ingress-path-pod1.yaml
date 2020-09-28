@@ -18,7 +18,6 @@ spec:
   containers:
   - name: web1
     image: httpd
-    #command: ['sh', '-c', 'echo The app is running! && sleep 3600']
     volumeMounts:
     - name: data
       mountPath: /usr/local/apache2/htdocs/centos1/
