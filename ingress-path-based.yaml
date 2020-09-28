@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+spec:
+  rules:
+  - host: web.example.com
+    http:
+      paths:
+      - path: /centos1
+        pathType: Prefix
+        backend:
+          service:
+            name: ingress-path-pod1
+            port:
+              number: 80
+      - path: /centos2
+        pathType: Prefix
+        backend:
+          service:
+            name: ingress-path-pod2
+            port:
+              number: 80
