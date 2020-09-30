@@ -1,0 +1,53 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ns-deny-ingress-all
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ns-deny-egress-all
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ns-allow-ingress-in-ns
+spec:
+  podSelector:
+    matchLabels: {}
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: default ## Change the name of namespace here
+      podSelector: {}
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ns-allow-egress-in-ns
+spec:
+  podSelector: {}
+  egress:
+  - ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: default ## Change the name of namespace here
+      podSelector: {}
+  policyTypes:
+  - Egress
