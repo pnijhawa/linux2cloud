@@ -1,0 +1,107 @@
+•	Set Hostname on Nodes
+# hostnamectl set-hostname <hostname>
+
+•	Update /etc/hosts file on all node
+172.24.0.161      master-a
+172.24.0.163      worker-a
+
+•	Update all the nodes and install few OS core packages
+# yum update –y
+# yum install wget gcc pcre-static pcre-devel curl -y
+
+•	Disable/Permissive selinux on all nodes
+# cat /etc/sysconfig/selinux
+SELINUX=permissive
+
+# init 6
+
+•	Disable Swap
+Memory swap can lead the performance and stability issues on host. So kuberenetes does allow the swap to enable. 
+# sed -i '/swap/d' /etc/fstab; swapoff -a; swapon –s
+
+•	Create repository file and send it to all nodes
+[root@loadbalancer ~]# cat > /etc/yum.repos.d/kubernetes.repo <<EOF
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+
+•	Install kubeadm, kubectl, kubelet and docker package on all the nodes
+Note – For Centos 7 in virtualization, in-premises we need to install docker-ce as driver however if we are installing it on cloud premises then we need to install docker.
+#  yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo ; yum install -y kubelet kubeadm kubectl docker-ce
+
+•	For Lower version
+# yum list --showduplicates kubeadm kubelet kubectl
+
+# yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo ; yum install -y kubelet-1.18.4 kubeadm-1.18.4 kubectl-1.18.4 docker-ce"; done
+
+•	Stop and disable firewall on all nodes
+# systemctl disable firewalld; systemctl stop firewalld 
+
+Note – If we keep firewall enabled then we need to add below ports
+
+•	Enable ports On Master Nodes (master-a, master-b)
+# firewall-cmd --permanent --add-port=6443/tcp
+# firewall-cmd --permanent --add-port=2379-2380/tcp
+# firewall-cmd --permanent --add-port=10250/tcp
+# firewall-cmd --permanent --add-port=10251/tcp
+# firewall-cmd --permanent --add-port=10252/tcp
+# firewall-cmd --permanent --add-port=10255/tcp
+# firewall-cmd --reload
+
+•	Enable ports On Worker Nodes (worker-a, worker-b)
+# firewall-cmd --permanent --add-port=10251/tcp
+# firewall-cmd --permanent --add-port=10255/tcp
+# firewall-cmd --reload
+
+•	Start and enable docker service on all nodes
+systemctl enable docker; systemctl start docker
+
+•	Start and enable kubelet on all the nodes
+systemctl enable kubelet; systemctl start kubelet 
+
+•	Tune bridge network parameters on all the nodes
+Note – On load balancer node it is not required, just to make easy copy to all node here we have changes these parameters
+
+# cat <<EOF > /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+
+# sysctl -p
+
+•	Initiate Cluster setup from any Master Node.
+[root@master-a ~]# screen -S K8s
+
+[root@master-a ~]# kubeadm init --control-plane-endpoint "loadbalancer:6443" --upload-certs --pod-network-cidr=10.8.0.0/16
+
+[root@worker-a ~]# kubeadm join loadbalancer:6443 --token 37oxyc.n0uf6dh50g5bu6sw \
+    --discovery-token-ca-cert-hash sha256:2cd93e097c694a1a532eb30db9e5d57368def7281fa0a2fd248a2c0ae6847aee
+ 
+	
+[root@worker-b ~]# kubeadm join loadbalancer:6443 --token 37oxyc.n0uf6dh50g5bu6sw \
+>     --discovery-token-ca-cert-hash sha256:2cd93e097c694a1a532eb30db9e5d57368def7281fa0a2fd248a2c0ae6847aee
+ 
+
+•	Set Environment to access Kubernetes cluster
+[root@master-a ~]#   mkdir -p $HOME/.kube
+[root@master-a ~]#   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+[root@master-a ~]#   sudo chown $(id -u):$(id -g) $HOME/.kube/config
+ 
+
+•	Check Node status, all the nodes will be show in cluster but in “NotReady” state because network plugins is still pending, that will be perform in next step.
+ 
+
+
+
+•	Install Network Plugins. Here we are using “calico” network add-on plugin for networking. However we have multiple choice for network add on plugins
+https://kubernetes.io/docs/concepts/cluster-administration/addons/
+curl https://docs.projectcalico.org/manifests/calico.yaml -O 
+kubectl apply -f calico.yaml
+kubectl get pods --all-namespaces
+ 
+ 
