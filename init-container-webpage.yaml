@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: init-container-for-webpage
+  labels:
+    app: apache
+spec:
+  volumes:
+  - name: html
+    emptyDir: {}
+  containers:
+  - name: apache-container
+    image: httpd
+    volumeMounts:
+    - name: html
+      mountPath: /usr/local/apache2/htdocs
+  initContainers:
+  - name: init-container
+    image: debian
+    volumeMounts:
+    - name: html
+      mountPath: /html
+    command: ["/bin/sh", "-c", "echo '<H1>Welcome To init Container</H1' > /html/index.html "]
