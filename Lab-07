@@ -1,0 +1,8 @@
+1.	Share /k8svol from nfs server
+2.	Create a nfs based pv (nfsvol) of 2 GB
+3.	Bind a pvc (nfspvc) with ReadWriteMany access mode and 2GiB 
+4.	Configure a pod to claim the volume. Download below YAML file and modify accordingly.
+5.	Configure a cluster on Google cloud with default options
+6.	Provision ssd based pv named as “fast-disk”
+7.	Bind a PVC (named as – gcp-pvc) from “fast-disk” of size 5GB with “ReadWriteOnce” access mode.
+8.	Configure a deployment using gcp-pvc as volume.
