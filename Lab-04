@@ -1,5 +1,15 @@
 1.	Generate manifest for a pod using centos/httpd-24-centos7 image and then deploy httpd pod with name “first-web-pod”
 2.	Deploy multi container pod with sidecar container with below specifications
-a.	Nginx should be main container having /usr/share/nginx/html as document root
-b.	Debian as sidecar container which generate data /my-pd directory
+  a.	Nginx should be main container having /usr/share/nginx/html as document root
+  b.	Debian as sidecar container which generate data /my-pd directory
 3.	Deploy multi container pod with proxy container where ngnix should be frontend for a web application
+4.	Create a pod with following specification
+  1. Pod should have one running container - apache-container
+  2. Image shoud be centos/httpd
+  3. /var/www/html/ should have content from https://github.com/jha-deepak9981/php-sample.git
+  4. For init container, 
+	a) Image - alpine/git:1.0.4
+	b) Command argument to make clone
+		    command: ["/bin/sh", "-c"]
+		    args: ['git clone https://github.com/jha-deepak9981/php-sample.git && mv php-sample/* /html']
+  5. Expose the pod with nodeport and verify the content on web page
